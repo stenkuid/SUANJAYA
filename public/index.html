@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUANJAYA // Smart Electronics Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --accent-red: #00b4d8;
+            --accent-red-hover: #0077b6;
+            --accent-red-glow: rgba(0, 180, 216, 0.45);
+            --noir-card: rgba(18, 18, 20, 0.75);
+        }
+
+        @property --gradient-angle {
+            syntax: "<angle>";
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        @keyframes border-spin {
+            from { --gradient-angle: 0deg; }
+            to { --gradient-angle: 360deg; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.35; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.08); }
+        }
+
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
+        }
+
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Shiny CTA Button with Conic Gradient Border */
+        .shiny-cta {
+            --gradient-angle: 0deg;
+            position: relative;
+            overflow: hidden;
+            border-radius: 9999px;
+            padding: 0.875rem 2.25rem;
+            background: linear-gradient(#080808, #080808) padding-box,
+                        conic-gradient(from var(--gradient-angle), transparent 0%, #ef233c 8%, #ef233c 20%, #ef233c 32%, transparent 45%, transparent 100%) border-box;
+            border: 2px solid transparent;
+            cursor: pointer;
+            isolation: isolate;
+            animation: border-spin 3s linear infinite;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .shiny-cta:hover {
+            box-shadow: 0 0 35px var(--accent-red-glow);
+            transform: translateY(-2px);
+        }
+
+        /* Ambient Glow & Grid Effects */
+        .noir-glow-sphere {
+            background: radial-gradient(circle, rgba(239, 35, 60, 0.18) 0%, rgba(239, 35, 60, 0.04) 45%, transparent 70%);
+            animation: pulse-glow 8s ease-in-out infinite;
+        }
+
+        .cyber-grid {
+            background-size: 44px 44px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 80%);
+        }
+
+        .crimson-border-glow {
+            box-shadow: 0 0 25px rgba(239, 35, 60, 0.2), inset 0 0 15px rgba(239, 35, 60, 0.05);
+        }
+
+        .text-stroke {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.12);
+            color: transparent;
+        }
+
+        .red-selection::selection {
+            background: #ef233c;
+            color: #ffffff;
+        }
+
+        /* Glass Cards */
+        .noir-glass {
+            background: rgba(14, 14, 17, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .noir-glass:hover {
+            border-color: rgba(239, 35, 60, 0.3);
+        }
+
+        /* Toast Container */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        .toast {
+            pointer-events: auto;
+            transform: translateX(120%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-black text-zinc-100 font-inter red-selection overflow-x-hidden min-h-screen relative antialiased">
+
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <!-- Deep Noir Crimson Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-b from-[#130304] via-[#08080a] to-black"></div>
+        
+        <!-- Glowing Red Atmospheric Orbs -->
+        <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[700px] noir-glow-sphere rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-[45%] -right-40 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[140px] pointer-events-none"></div>
+        <div class="absolute top-[85%] -left-40 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[140px] pointer-events-none"></div>
+
+        <!-- Canvas for dynamic red starlight particles -->
+        <canvas id="starfield-canvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+        
+        <!-- Subtle Perspective Grid -->
+        <div class="absolute inset-0 cyber-grid"></div>
+    </div>
+
+    <!-- Header Glass Blur Ribbon -->
+    <div class="fixed top-0 left-0 right-0 h-28 pointer-events-none z-40 bg-gradient-to-b from-black/90 via-black/40 to-transparent backdrop-blur-[6px] [mask-image:linear-gradient(to_bottom,black,transparent)]"></div>
+
+    <header class="fixed top-0 left-0 w-full z-50 pt-5 px-4 sm:px-6">
+        <nav class="max-w-6xl mx-auto flex items-center justify-between bg-zinc-950/70 backdrop-blur-2xl border border-white/10 rounded-full px-5 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="relative w-7 h-7 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-[#00b4d8]/30 rounded-md rotate-45 group-hover:rotate-90 transition-transform duration-500 blur-sm"></div>
+                    <div class="w-5 h-5 bg-[#00b4d8] rounded-sm rotate-45 group-hover:scale-110 transition-transform duration-300 flex items-center justify-center shadow-[0_0_12px_#ef233c]">
+                        <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                    </div>
+                </div>
+                <span class="text-xl font-extrabold font-manrope tracking-tight text-white flex items-center gap-1.5">
+                    SUANJAYA<span class="text-[#00b4d8] text-xs font-mono px-1.5 py-0.5 rounded bg-red-950/60 border border-red-800/40 uppercase">v3.4</span>
+                </span>
+            </a>
+
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center gap-7">
+                <a href="#playground" class="text-xs uppercase tracking-widest font-semibold text-zinc-400 hover:text-white transition-colors">Neural Core</a>
+                <a href="#features" class="text-xs uppercase tracking-widest font-semibold text-zinc-400 hover:text-white transition-colors">Architecture</a>
+                <a href="#benchmarks" class="text-xs uppercase tracking-widest font-semibold text-zinc-400 hover:text-white transition-colors">Telemetry</a>
+                <a href="#pricing" class="text-xs uppercase tracking-widest font-semibold text-zinc-400 hover:text-white transition-colors">Protocol Tier</a>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-3">
+                <button onclick="openModal('access-modal')" class="hidden sm:inline-flex text-xs font-mono font-medium text-zinc-400 hover:text-white px-3 py-1.5 transition-colors">
+                    CLI_AUTH
+                </button>
+                <button onclick="openModal('access-modal')" class="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white/5 px-5 py-2 transition-transform active:scale-95 border border-white/10 hover:border-red-500/50">
+                    <span class="absolute inset-[-100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_75%,#ef233c_100%)] opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    <span class="absolute inset-[1px] rounded-full bg-black"></span>
+                    <span class="relative z-10 flex items-center gap-2 text-xs font-bold font-manrope tracking-wider uppercase text-white">
+                        Access Grid <iconify-icon icon="lucide:arrow-right" class="w-3.5 h-3.5 text-[#00b4d8] group-hover:translate-x-1 transition-transform"></iconify-icon>
+                    </span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="relative z-10">
+        <section class="min-h-screen flex flex-col items-center justify-center pt-36 pb-20 px-5 sm:px-8">
+            <div class="text-center max-w-5xl mx-auto flex flex-col items-center">
+                
+                <!-- Status Pill -->
+                <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-red-950/40 border border-red-500/30 backdrop-blur-md mb-8 shadow-[0_0_20px_rgba(239,35,60,0.15)]">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-80"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00b4d8]"></span>
+                    </span>
+                    <span class="text-xs font-mono font-medium text-red-200 tracking-wide">
+                        SUANJAYA CLUSTER ACTIVE // LATENCY &lt; 8ms
+                    </span>
+                    <iconify-icon icon="lucide:sparkles" class="w-3.5 h-3.5 text-[#00b4d8]"></iconify-icon>
+                </div>
+
+                <!-- Main Hero Headline -->
+                <h1 class="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tighter font-manrope leading-[1.08] mb-8">
+                    <span class="block text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-100 to-zinc-400">
+                        Autonomous Logic.
+                    </span>
+                    <span class="block text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-zinc-500">
+                        Forged in <span class="text-[#00b4d8] relative inline-block drop-shadow-[0_0_25px_rgba(239,35,60,0.6)]">
+                            Red Noir
+                            <svg class="absolute w-full h-3 -bottom-1.5 left-0 text-[#00b4d8] opacity-80" viewBox="0 0 120 12" preserveAspectRatio="none">
+                                <path d="M0 6 Q 60 12 120 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                    </span>
+                </h1>
+
+                <!-- Subtitle -->
+                <p class="text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-12 leading-relaxed font-light">
+                    Transform high-entropy requirements into compiled production architectures with self-optimizing neural pipelines and zero latency friction.
+                </p>
+
+                <!-- Hero Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-md mb-16">
+                    <button onclick="openModal('access-modal')" class="shiny-cta w-full sm:w-auto">
+                        <span class="relative z-10 flex items-center justify-center gap-2 text-white font-bold font-manrope tracking-wide">
+                            Deploy Node <iconify-icon icon="lucide:terminal" class="w-4 h-4 text-[#00b4d8]"></iconify-icon>
+                        </span>
+                    </button>
+                    
+                    <a href="#playground" class="w-full sm:w-auto px-7 py-3.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-300 font-medium hover:text-white hover:border-zinc-600 hover:bg-zinc-800 transition-all flex items-center justify-center gap-2">
+                        <iconify-icon icon="lucide:cpu" class="w-4 h-4 text-zinc-400"></iconify-icon>
+                        Live Playground
+                    </a>
+                </div>
+
+                <!-- Live Command Line Terminal Mockup -->
+                <div class="w-full max-w-4xl noir-glass rounded-2xl p-5 sm:p-7 text-left border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.9)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-[#00b4d8]/80 border border-red-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-zinc-700"></div>
+                            <div class="w-3 h-3 rounded-full bg-zinc-700"></div>
+                            <span class="ml-2 text-xs font-mono text-zinc-400">vortex-kernel@cluster-09 ~ zsh</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-[11px] font-mono text-zinc-400">LIVE WEBSOCKET</span>
+                        </div>
+                    </div>
+                    <div class="font-mono text-xs sm:text-sm space-y-2 text-zinc-300">
+                        <p class="text-zinc-500">// Initialize cluster synthesizer</p>
+                        <p><span class="text-[#00b4d8] font-bold">➜</span> <span class="text-white">vortex init --target=enterprise-edge --neural-weights=v3.4-ultra</span></p>
+                        <p class="text-zinc-400"><span class="text-emerald-400 font-bold">✔</span> Verified signature <span class="text-zinc-600">[0x9AF...82E]</span> in 1.4ms</p>
+                        <p class="text-zinc-400"><span class="text-emerald-400 font-bold">✔</span> Auto-routing 4,800 token/sec through distributed tensor pipeline</p>
+                        <p class="text-[#00b4d8] font-bold flex items-center gap-2">
+                            <span>⚡ System ready. Listening on socket ::8080</span>
+                            <span class="inline-block w-2 h-4 bg-[#00b4d8] animate-pulse"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrated Tech Partners Marquee Strip -->
+            <div class="w-full mt-28 border-y border-white/10 bg-white/[0.015] backdrop-blur-md py-8">
+                <div class="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <p class="text-xs font-mono font-bold tracking-widest text-[#00b4d8] uppercase flex items-center gap-2 shrink-0">
+                        <iconify-icon icon="lucide:cpu" class="w-4 h-4"></iconify-icon> INTEGRATED ECOSYSTEM
+                    </p>
+                    <div class="flex flex-wrap justify-center lg:justify-end gap-8 sm:gap-14 items-center opacity-70 hover:opacity-100 transition-opacity">
+                        <div class="flex items-center gap-2 text-sm font-manrope font-bold text-zinc-300 hover:text-white transition-colors">
+                            <iconify-icon icon="simple-icons:anthropic" class="w-5 h-5 text-zinc-400"></iconify-icon> Anthropic
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-manrope font-bold text-zinc-300 hover:text-white transition-colors">
+                            <iconify-icon icon="simple-icons:openai" class="w-5 h-5 text-zinc-400"></iconify-icon> OpenAI
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-manrope font-bold text-zinc-300 hover:text-white transition-colors">
+                            <iconify-icon icon="simple-icons:rust" class="w-5 h-5 text-[#00b4d8]"></iconify-icon> Rust Core
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-manrope font-bold text-zinc-300 hover:text-white transition-colors">
+                            <iconify-icon icon="simple-icons:webassembly" class="w-5 h-5 text-zinc-400"></iconify-icon> WASM Engine
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-manrope font-bold text-zinc-300 hover:text-white transition-colors">
+                            <iconify-icon icon="simple-icons:cloudflare" class="w-5 h-5 text-zinc-400"></iconify-icon> Cloudflare Edge
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="playground" class="py-28 px-5 sm:px-8 border-t border-white/5 bg-zinc-950/30">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <div class="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#00b4d8] uppercase tracking-widest px-3 py-1 rounded-full bg-red-950/40 border border-red-800/40 mb-3">
+                        Interactive Console
+                    </div>
+                    <h2 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-manrope">
+                        Test the <span class="text-[#00b4d8]">Neural Synthesizer</span>
+                    </h2>
+                    <p class="text-zinc-400 mt-4 text-base sm:text-lg">
+                        Select a target architecture, customize parameters in real time, and inspect compiled output.
+                    </p>
+                </div>
+
+                <!-- Playground Interface Box -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-zinc-950/80 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+                    <!-- Left Control Panel -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <div>
+                            <label class="text-xs font-mono uppercase tracking-wider text-zinc-400 block mb-2">Preset Archetype</label>
+                            <div class="grid grid-cols-2 gap-2" id="preset-buttons">
+                                <button onclick="selectPreset('realtime-stream')" class="preset-btn active p-3 rounded-lg text-left text-xs font-mono border border-red-500 bg-red-950/30 text-white transition-all">
+                                    <div class="font-bold text-sm text-white mb-0.5">Stream Sync</div>
+                                    <span class="text-zinc-400">Sub-10ms WebSockets</span>
+                                </button>
+                                <button onclick="selectPreset('vector-index')" class="preset-btn p-3 rounded-lg text-left text-xs font-mono border border-zinc-800 bg-zinc-900/60 text-zinc-300 hover:border-zinc-700 transition-all">
+                                    <div class="font-bold text-sm text-white mb-0.5">Vector Store</div>
+                                    <span class="text-zinc-400">HNSW 1536-dim Index</span>
+                                </button>
+                                <button onclick="selectPreset('auth-shield')" class="preset-btn p-3 rounded-lg text-left text-xs font-mono border border-zinc-800 bg-zinc-900/60 text-zinc-300 hover:border-zinc-700 transition-all">
+                                    <div class="font-bold text-sm text-white mb-0.5">Zero-Trust Guard</div>
+                                    <span class="text-zinc-400">Hardware mTLS proxy</span>
+                                </button>
+                                <button onclick="selectPreset('edge-worker')" class="preset-btn p-3 rounded-lg text-left text-xs font-mono border border-zinc-800 bg-zinc-900/60 text-zinc-300 hover:border-zinc-700 transition-all">
+                                    <div class="font-bold text-sm text-white mb-0.5">WASM Edge</div>
+                                    <span class="text-zinc-400">V8 Isolated Runtime</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Sliders -->
+                        <div class="space-y-4 pt-2">
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <span class="text-zinc-400">CONCURRENCY LIMIT</span>
+                                    <span id="concurrency-val" class="text-[#00b4d8] font-bold">128k req/s</span>
+                                </div>
+                                <input type="range" id="concurrency-range" min="10" max="500" value="128" class="w-full accent-[#ef233c] bg-zinc-800 h-1.5 rounded-lg appearance-none cursor-pointer" oninput="updateRangeValues()">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <span class="text-zinc-400">TEMPERATURE / ENTROPY</span>
+                                    <span id="entropy-val" class="text-[#00b4d8] font-bold">0.18</span>
+                                </div>
+                                <input type="range" id="entropy-range" min="1" max="100" value="18" class="w-full accent-[#ef233c] bg-zinc-800 h-1.5 rounded-lg appearance-none cursor-pointer" oninput="updateRangeValues()">
+                            </div>
+                        </div>
+
+                        <!-- Trigger Button -->
+                        <button onclick="synthesizePayload()" id="synth-btn" class="w-full py-3.5 bg-[#00b4d8] hover:bg-red-600 text-white rounded-xl font-manrope font-bold text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(239,35,60,0.4)] transition-all active:scale-[0.98]">
+                            <iconify-icon icon="lucide:play" class="w-4 h-4"></iconify-icon> Execute Synthesizer
+                        </button>
+                    </div>
+
+                    <!-- Right Code & Output Box -->
+                    <div class="lg:col-span-7 flex flex-col bg-black rounded-xl border border-zinc-800/80 overflow-hidden">
+                        <div class="flex items-center justify-between px-4 py-3 bg-zinc-900/80 border-b border-zinc-800">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#00b4d8]"></span>
+                                <span id="code-tab-title" class="text-xs font-mono text-zinc-300">stream_router.rs</span>
+                            </div>
+                            <button onclick="copySnippet()" class="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/10 hover:border-white/20 transition-all">
+                                <iconify-icon icon="lucide:copy" class="w-3.5 h-3.5"></iconify-icon>
+                                <span id="copy-text">Copy Code</span>
+                            </button>
+                        </div>
+                        <div class="p-5 flex-1 font-mono text-xs sm:text-sm text-zinc-300 overflow-x-auto bg-[#0a0a0c] leading-relaxed relative">
+                            <pre><code id="code-snippet-display">// Initializing SUANJAYA Stream Synthesizer
+use vortex_noir_engine::{Cluster, SocketProtocol, Compression};
+
+pub async fn bootstrap_pipeline() -> Result&lt;Cluster, VortexError&gt; {
+    let mut cluster = Cluster::builder()
+        .max_concurrency(128_000)
+        .entropy_threshold(0.18)
+        .enable_tls_guard(true)
+        .build()?;
+    
+    cluster.bind_stream("0.0.0.0:8080", SocketProtocol::ZeroCopy).await?;
+    println!("⚡ Cluster initialized at target sub-10ms!");
+    Ok(cluster)
+}</code></pre>
+                        </div>
+                        <div class="p-3 bg-zinc-950 border-t border-zinc-900 flex items-center justify-between text-[11px] font-mono text-zinc-500">
+                            <span>TARGET: RUST v1.82 (x86_64-unknown-linux-musl)</span>
+                            <span class="text-emerald-400 flex items-center gap-1"><iconify-icon icon="lucide:check-circle-2" class="w-3.5 h-3.5"></iconify-icon> SYNTAX VERIFIED</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="py-32 px-5 sm:px-8 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-20 text-center max-w-3xl mx-auto">
+                    <span class="text-xs font-mono uppercase tracking-widest text-[#00b4d8] font-bold px-3 py-1 rounded-full bg-red-950/40 border border-red-900/40">
+                        Modular Subsystems
+                    </span>
+                    <h2 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-manrope mt-4 mb-4">
+                        The Infrastructure of <br />
+                        <span class="text-[#00b4d8]">Uncompromising Velocity</span>
+                    </h2>
+                    <p class="text-base sm:text-lg text-zinc-400 font-light">
+                        Engineered with extreme precision. Zero dependencies, bare-metal acceleration, and automated memory isolation.
+                    </p>
+                </div>
+
+                <!-- Bento Grid Container -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Card 1: Featured Double-Span Card -->
+                    <div class="md:col-span-2 group relative overflow-hidden p-8 sm:p-10 border border-white/10 bg-gradient-to-br from-zinc-900/60 via-black to-black hover:border-red-500/40 transition-all duration-300 rounded-2xl flex flex-col justify-between">
+                        <div class="relative z-10">
+                            <div class="mb-6 inline-flex p-3.5 rounded-xl bg-red-950/60 border border-red-500/30 text-[#00b4d8] shadow-[0_0_20px_rgba(239,35,60,0.3)]">
+                                <iconify-icon icon="lucide:zap" class="w-7 h-7"></iconify-icon>
+                            </div>
+                            <h3 class="text-3xl font-bold text-white font-manrope mb-4 tracking-tight">Zero-Copy Tensor Fabric</h3>
+                            <p class="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl">
+                                Eliminate kernel context switches. Our proprietary GPU memory interconnect executes tensor operations directly inside NVLink space without CPU bottleneck.
+                            </p>
+                        </div>
+                        
+                        <!-- Mini visual telemetry widget -->
+                        <div class="relative z-10 mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-6">
+                                <div>
+                                    <span class="text-[10px] font-mono text-zinc-500 uppercase block">Throughput</span>
+                                    <span class="text-xl font-bold font-mono text-white">4.8 TB/s</span>
+                                </div>
+                                <div class="h-8 w-px bg-zinc-800"></div>
+                                <div>
+                                    <span class="text-[10px] font-mono text-zinc-500 uppercase block">Overhead</span>
+                                    <span class="text-xl font-bold font-mono text-[#00b4d8]">0.02%</span>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-2 text-xs font-mono text-[#00b4d8] group-hover:translate-x-1 transition-transform">
+                                READ WHITE PAPER <iconify-icon icon="lucide:arrow-right" class="w-4 h-4"></iconify-icon>
+                            </span>
+                        </div>
+                        <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-red-600/10 rounded-full blur-[100px] pointer-events-none group-hover:bg-red-600/20 transition-all"></div>
+                    </div>
+
+                    <!-- Card 2: Neural Cache -->
+                    <div class="group relative overflow-hidden p-8 border border-white/10 bg-black hover:border-red-500/40 transition-all duration-300 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="mb-5 inline-flex p-3 rounded-xl bg-white/5 border border-white/10 text-white group-hover:text-[#00b4d8] group-hover:border-red-500/30 transition-colors">
+                                <iconify-icon icon="lucide:database" class="w-6 h-6"></iconify-icon>
+                            </div>
+                            <h3 class="text-xl font-bold text-white font-manrope mb-2">Semantic L1 Cache</h3>
+                            <p class="text-zinc-400 text-sm leading-relaxed">
+                                Exact & semantic prompt deduplication reduces inference costs by 73% with vector distance hashing.
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between text-xs font-mono text-zinc-500">
+                            <span>HIT RATIO: 89.4%</span>
+                            <span class="text-emerald-400">ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Deterministic Sandbox -->
+                    <div class="group relative overflow-hidden p-8 border border-white/10 bg-black hover:border-red-500/40 transition-all duration-300 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="mb-5 inline-flex p-3 rounded-xl bg-white/5 border border-white/10 text-white group-hover:text-[#00b4d8] group-hover:border-red-500/30 transition-colors">
+                                <iconify-icon icon="lucide:shield-check" class="w-6 h-6"></iconify-icon>
+                            </div>
+                            <h3 class="text-xl font-bold text-white font-manrope mb-2">Formal Verification</h3>
+                            <p class="text-zinc-400 text-sm leading-relaxed">
+                                Mathematical proof checkers ensure AI output strictly matches typed schema constraints before serialization.
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between text-xs font-mono text-zinc-500">
+                            <span>Z3 SMT SOLVER</span>
+                            <span class="text-white font-bold">100% PROVEN</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Edge Multi-region -->
+                    <div class="md:col-span-2 group relative overflow-hidden p-8 sm:p-10 border border-white/10 bg-gradient-to-bl from-zinc-900/60 via-black to-black hover:border-red-500/40 transition-all duration-300 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="mb-5 inline-flex p-3 rounded-xl bg-white/5 border border-white/10 text-white group-hover:text-[#00b4d8] group-hover:border-red-500/30 transition-colors">
+                                <iconify-icon icon="lucide:globe" class="w-6 h-6"></iconify-icon>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white font-manrope mb-3">Global Anycast Consensus</h3>
+                            <p class="text-zinc-400 text-sm sm:text-base max-w-xl leading-relaxed">
+                                320 edge edge-pops globally synchronize system state using Raft protocol over UDP with atomic replay protection.
+                            </p>
+                        </div>
+                        <div class="mt-8 flex flex-wrap items-center gap-3">
+                            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-zinc-300">SGP-01</span>
+                            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-zinc-300">FRA-02</span>
+                            <span class="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-zinc-300">IAD-04</span>
+                            <span class="px-3 py-1 rounded-full bg-red-950/60 border border-red-500/30 text-xs font-mono text-[#00b4d8]">+317 Edge Nodes</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="w-full bg-[#00b4d8] py-20 px-6 relative overflow-hidden shadow-[0_0_60px_rgba(239,35,60,0.5)]">
+            <div class="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
+            <div class="max-w-4xl mx-auto text-center relative z-10">
+                <div class="flex justify-center gap-1.5 text-black mb-6">
+                    <iconify-icon icon="lucide:star" class="w-6 h-6" fill="currentColor"></iconify-icon>
+                    <iconify-icon icon="lucide:star" class="w-6 h-6" fill="currentColor"></iconify-icon>
+                    <iconify-icon icon="lucide:star" class="w-6 h-6" fill="currentColor"></iconify-icon>
+                    <iconify-icon icon="lucide:star" class="w-6 h-6" fill="currentColor"></iconify-icon>
+                    <iconify-icon icon="lucide:star" class="w-6 h-6" fill="currentColor"></iconify-icon>
+                </div>
+                <h3 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black font-manrope leading-tight mb-8 tracking-tight">
+                    "SUANJAYA eradicated our inference bottlenecks overnight. Deploying autonomous models at scale went from weeks of orchestration to raw command line execution."
+                </h3>
+                <div class="flex items-center justify-center gap-4">
+                    <div class="w-12 h-12 bg-black rounded-full overflow-hidden flex items-center justify-center text-white border border-black/20 font-mono font-bold">
+                        VX
+                    </div>
+                    <div class="text-left">
+                        <div class="text-black font-extrabold text-lg font-manrope">Dr. Elena Rostova</div>
+                        <div class="text-black/80 text-sm font-medium">Head of Infrastructure at CyberDyn Labs</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pricing" class="py-32 px-5 sm:px-8 bg-black relative border-t border-white/10">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-mono uppercase tracking-widest text-[#00b4d8] font-bold px-3 py-1 rounded-full bg-red-950/40 border border-red-900/40">
+                        Protocol Licenses
+                    </span>
+                    <h2 class="text-4xl sm:text-5xl font-extrabold text-white font-manrope mt-4 mb-3">
+                        Predictable Compute. Zero Lock-in.
+                    </h2>
+                    <p class="text-zinc-400">Scale seamlessly from localized prototypes to planetary clusters.</p>
+
+                    <!-- Billing Toggle -->
+                    <div class="mt-8 inline-flex items-center bg-zinc-900/90 p-1.5 rounded-full border border-zinc-800">
+                        <button id="billing-monthly" onclick="toggleBilling('monthly')" class="px-5 py-1.5 rounded-full text-xs font-mono font-bold text-white bg-black shadow transition-all">
+                            MONTHLY
+                        </button>
+                        <button id="billing-annual" onclick="toggleBilling('annual')" class="px-5 py-1.5 rounded-full text-xs font-mono font-bold text-zinc-400 hover:text-white transition-all flex items-center gap-1.5">
+                            ANNUAL <span class="text-[#00b4d8] text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-red-950 border border-red-800/60">-20%</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+                    
+                    <!-- Plan 1: Developer -->
+                    <div class="p-8 border border-zinc-800/80 bg-zinc-950/60 hover:border-zinc-700 transition-all rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold font-manrope text-white">Dev Cluster</h3>
+                                <span class="text-xs font-mono text-zinc-500">TIER_01</span>
+                            </div>
+                            <p class="text-zinc-400 text-sm mb-6 h-10">Essential toolchain for standalone engineers and research hackers.</p>
+                            <div class="mb-8 flex items-baseline gap-1">
+                                <span class="text-zinc-500 font-mono text-2xl">$</span>
+                                <span class="text-5xl font-extrabold font-manrope text-white price-display" data-monthly="0" data-annual="0">0</span>
+                                <span class="text-zinc-500 text-sm font-mono">/mo</span>
+                            </div>
+                            <ul class="space-y-3.5 mb-8 text-sm text-zinc-300">
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> 2 Concurrency Workers</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> 50k Requests / month</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Community Discord</li>
+                                <li class="flex items-center gap-3 text-zinc-600"><iconify-icon icon="lucide:x" class="shrink-0"></iconify-icon> Hardware mTLS proxy</li>
+                            </ul>
+                        </div>
+                        <button onclick="selectPlan('Developer')" class="w-full py-3.5 px-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all">
+                            Initialize Node
+                        </button>
+                    </div>
+
+                    <!-- Plan 2: Pro (Highlighted with Red Noir Glow) -->
+                    <div class="relative p-8 border-2 border-[#00b4d8] bg-zinc-950/90 shadow-[0_0_40px_rgba(239,35,60,0.25)] rounded-2xl flex flex-col justify-between md:-translate-y-2">
+                        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#00b4d8] text-white text-[11px] font-mono font-bold uppercase tracking-widest px-4 py-1 rounded-full shadow-[0_0_15px_#ef233c]">
+                            RECOMMENDED RUNTIME
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold font-manrope text-white">Quantum Node</h3>
+                                <span class="text-xs font-mono text-[#00b4d8]">TIER_02</span>
+                            </div>
+                            <p class="text-zinc-400 text-sm mb-6 h-10">High-throughput execution for fast-growing digital software.</p>
+                            <div class="mb-8 flex items-baseline gap-1">
+                                <span class="text-zinc-500 font-mono text-2xl">$</span>
+                                <span class="text-5xl font-extrabold font-manrope text-white price-display" data-monthly="69" data-annual="55">69</span>
+                                <span class="text-zinc-500 text-sm font-mono">/mo</span>
+                            </div>
+                            <ul class="space-y-3.5 mb-8 text-sm text-zinc-300">
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> 32 Dedicated Workers</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Unlimited Syntheses</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Sub-5ms NVLink Interconnect</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Priority 24/7 Red-Line Support</li>
+                            </ul>
+                        </div>
+                        <button onclick="selectPlan('Quantum Node')" class="w-full py-3.5 px-4 bg-[#00b4d8] hover:bg-red-600 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(239,35,60,0.4)] active:scale-98">
+                            Deploy Quantum
+                        </button>
+                    </div>
+
+                    <!-- Plan 3: Enterprise -->
+                    <div class="p-8 border border-zinc-800/80 bg-zinc-950/60 hover:border-zinc-700 transition-all rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xl font-bold font-manrope text-white">Sovereign Grid</h3>
+                                <span class="text-xs font-mono text-zinc-500">TIER_03</span>
+                            </div>
+                            <p class="text-zinc-400 text-sm mb-6 h-10">Air-gapped on-premise hardware clusters with custom SLA guarantee.</p>
+                            <div class="mb-8 flex items-baseline gap-1">
+                                <span class="text-zinc-500 font-mono text-2xl">$</span>
+                                <span class="text-5xl font-extrabold font-manrope text-white price-display" data-monthly="499" data-annual="399">499</span>
+                                <span class="text-zinc-500 text-sm font-mono">/mo</span>
+                            </div>
+                            <ul class="space-y-3.5 mb-8 text-sm text-zinc-300">
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Unlimited Node Clusters</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Custom Model Finetuning Weights</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> Dedicated Cryptographic HSMs</li>
+                                <li class="flex items-center gap-3"><iconify-icon icon="lucide:check" class="text-[#00b4d8] shrink-0"></iconify-icon> 99.999% Atomic SLA</li>
+                            </ul>
+                        </div>
+                        <button onclick="selectPlan('Sovereign Grid')" class="w-full py-3.5 px-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all">
+                            Request Sovereign Access
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-5 sm:px-8 text-center bg-zinc-950/90 relative overflow-hidden border-t border-white/5">
+            <div class="absolute inset-0 bg-gradient-to-t from-red-950/20 to-transparent pointer-events-none"></div>
+            <div class="max-w-3xl mx-auto relative z-10">
+                <div class="inline-flex items-center gap-2 text-xs font-mono text-[#00b4d8] uppercase tracking-widest px-3.5 py-1 rounded-full bg-red-950/40 border border-red-800/40 mb-6">
+                    Early Cohort Access
+                </div>
+                <h2 class="text-5xl sm:text-6xl md:text-7xl font-extrabold font-manrope mb-6 tracking-tighter text-white">
+                    Command the <span class="text-[#00b4d8]">Machine.</span>
+                </h2>
+                <p class="text-lg sm:text-xl text-zinc-400 mb-10 max-w-xl mx-auto font-light">
+                    Join over 14,000 engineers building autonomous systems on the Red Noir stack.
+                </p>
+                
+                <form id="waitlist-form" onsubmit="handleWaitlistSubmit(event)" class="max-w-md mx-auto flex flex-col sm:flex-row gap-3">
+                    <input type="email" id="waitlist-email" required placeholder="engineer@enterprise.io" class="flex-1 bg-zinc-900/90 border border-white/10 rounded-full px-6 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:border-[#00b4d8] focus:ring-1 focus:ring-[#ef233c] transition-all font-mono text-sm">
+                    <button type="submit" class="bg-[#00b4d8] hover:bg-red-600 text-white font-manrope font-bold rounded-full px-8 py-3.5 transition-all shadow-[0_0_20px_rgba(239,35,60,0.4)] active:scale-95 shrink-0 flex items-center justify-center gap-2">
+                        <span>Join Protocol</span>
+                        <iconify-icon icon="lucide:arrow-right" class="w-4 h-4"></iconify-icon>
+                    </button>
+                </form>
+                <div class="mt-4 text-[11px] font-mono text-zinc-500">Instant invite token issued via GPG signature.</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black border-t border-zinc-900 pt-24 pb-12 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-20 relative z-10">
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-5 h-5 bg-[#00b4d8] rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_10px_#ef233c]">
+                        <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+                    </div>
+                    <span class="text-2xl font-extrabold font-manrope tracking-tight text-white">SUANJAYA NOIR</span>
+                </div>
+                <p class="text-zinc-500 max-w-sm leading-relaxed text-sm">
+                    High-velocity neural runtime and deterministic infrastructure engineered for zero-latency distributed computing.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="text-xs font-mono font-bold text-[#00b4d8] uppercase tracking-widest mb-5">Architecture</h4>
+                <ul class="space-y-3 text-zinc-400 text-sm">
+                    <li><a href="#playground" class="hover:text-white transition-colors">Synthesizer Core</a></li>
+                    <li><a href="#features" class="hover:text-white transition-colors">Zero-Copy Tensor</a></li>
+                    <li><a href="#features" class="hover:text-white transition-colors">Anycast Mesh</a></li>
+                    <li><a href="#pricing" class="hover:text-white transition-colors">Compute Tiers</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-xs font-mono font-bold text-[#00b4d8] uppercase tracking-widest mb-5">Security & Docs</h4>
+                <ul class="space-y-3 text-zinc-400 text-sm">
+                    <li><a href="#" onclick="showToast('Security Audit: ISO-27001 & SOC-2 Type II Certified', 'info'); return false;" class="hover:text-white transition-colors">Formal Audit Proof</a></li>
+                    <li><a href="#" onclick="showToast('API Specification v3.4 docs copied', 'success'); return false;" class="hover:text-white transition-colors">OpenAPI Spec</a></li>
+                    <li><a href="#" onclick="showToast('Telemetry status: 100% operational', 'info'); return false;" class="hover:text-white transition-colors">Telemetry Status</a></li>
+                    <li><a href="#" onclick="showToast('Privacy Policy: Zero data retention on raw tensor streams', 'info'); return false;" class="hover:text-white transition-colors">Cryptographic Privacy</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Huge Footer Noir Watermark -->
+        <div class="flex justify-center items-center py-6 opacity-20 pointer-events-none select-none">
+            <h1 class="text-[14vw] leading-none font-extrabold font-manrope tracking-tighter text-stroke">SUANJAYA NOIR</h1>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 border-t border-zinc-900/80 pt-8 flex flex-col md:flex-row items-center justify-between text-zinc-600 text-xs font-mono gap-4">
+            <p>&copy; 2026 SUANJAYA NOIR ARCHITECTURE LABS INC. ALL RIGHTS RESERVED.</p>
+            <div class="flex gap-6">
+                <a href="#" onclick="showToast('Connecting to terminal feed...', 'info'); return false;" class="hover:text-zinc-300 transition-colors">TERMINAL</a>
+                <a href="#" onclick="showToast('Connecting to GitHub repository...', 'info'); return false;" class="hover:text-zinc-300 transition-colors">GITHUB</a>
+                <a href="#" onclick="showToast('Connecting to Matrix network...', 'info'); return false;" class="hover:text-zinc-300 transition-colors">MATRIX</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="access-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="noir-glass border border-white/10 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-[0_0_50px_rgba(239,35,60,0.3)] transform scale-95 transition-transform duration-300" id="access-modal-card">
+            <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#00b4d8] shadow-[0_0_8px_#ef233c]"></span>
+                    <h3 class="text-lg font-bold font-manrope text-white" id="modal-title">Initialize Node Access</h3>
+                </div>
+                <button onclick="closeModal('access-modal')" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors">
+                    <iconify-icon icon="lucide:x" class="w-5 h-5"></iconify-icon>
+                </button>
+            </div>
+            <p class="text-zinc-400 text-xs sm:text-sm mb-5 leading-relaxed" id="modal-desc">
+                Generate an ephemeral mTLS cryptographic keypair to interact directly with cluster endpoints.
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[11px] font-mono text-zinc-400 block mb-1.5 uppercase">Developer Handle / Org</label>
+                    <input type="text" id="modal-handle" placeholder="e.g. quantum-ops" class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-[#00b4d8]">
+                </div>
+                <div>
+                    <label class="text-[11px] font-mono text-zinc-400 block mb-1.5 uppercase">Target Region</label>
+                    <select class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-[#00b4d8]">
+                        <option>ap-southeast-1 (Singapore)</option>
+                        <option>eu-central-1 (Frankfurt)</option>
+                        <option>us-east-1 (N. Virginia)</option>
+                    </select>
+                </div>
+                <button onclick="generateAccessKey()" class="w-full py-3 bg-[#00b4d8] hover:bg-red-600 text-white rounded-xl font-bold font-manrope text-sm transition-all shadow-[0_0_15px_rgba(239,35,60,0.4)] mt-2">
+                    Generate Auth Token
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Center -->
+    <div id="toast-container"></div>
+
+    <script>
+        (function initStarfield() {
+            const canvas = document.getElementById('starfield-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let stars = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                stars = [];
+                const count = Math.floor((width * height) / 10000);
+                for (let i = 0; i < count; i++) {
+                    stars.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: Math.random() * 1.4 + 0.3,
+                        alpha: Math.random() * 0.7 + 0.1,
+                        speed: Math.random() * 0.3 + 0.05,
+                        isRed: Math.random() < 0.18 // 18% crimson noir stars
+                    });
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                for (let star of stars) {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    if (star.isRed) {
+                        ctx.fillStyle = `rgba(239, 35, 60, ${star.alpha})`;
+                        ctx.shadowBlur = 4;
+                        ctx.shadowColor = '#ef233c';
+                    } else {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fill();
+
+                    // Movement
+                    star.y -= star.speed;
+                    if (star.y < 0) {
+                        star.y = height;
+                        star.x = Math.random() * width;
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        })();
+
+        const snippets = {
+            'realtime-stream': {
+                file: 'stream_router.rs',
+                code: `// Initializing SUANJAYA Stream Synthesizer\nuse vortex_noir_engine::{Cluster, SocketProtocol, Compression};\n\npub async fn bootstrap_pipeline() -> Result<Cluster, VortexError> {\n    let mut cluster = Cluster::builder()\n        .max_concurrency(128_000)\n        .entropy_threshold(0.18)\n        .enable_tls_guard(true)\n        .build()?;\n    \n    cluster.bind_stream("0.0.0.0:8080", SocketProtocol::ZeroCopy).await?;\n    println!("⚡ Cluster initialized at target sub-10ms!");\n    Ok(cluster)\n}`
+            },
+            'vector-index': {
+                file: 'vector_hnsw.rs',
+                code: `// High-Performance 1536-dim HNSW Vector Index\nuse vortex_noir_engine::index::{HnswConfig, MetricType, VectorEngine};\n\npub fn init_hnsw_storage() -> VectorEngine {\n    let config = HnswConfig {\n        dimensions: 1536,\n        m_neighbors: 32,\n        ef_construction: 200,\n        metric: MetricType::CosineDistance,\n    };\n    VectorEngine::mount_persistent("/data/noir_vectors", config)\n}`
+            },
+            'auth-shield': {
+                file: 'guard_policy.rego',
+                code: `package vortex.auth.shield\n\ndefault allow = false\n\nallow {\n    input.client.mtls_verified == true\n    input.request.entropy_score <= 0.20\n    crypto.verify_signature(input.request.payload, input.client.gpg_pubkey)\n}`
+            },
+            'edge-worker': {
+                file: 'edge_isolate.ts',
+                code: `import { NoirWorker, TensorContext } from '@vortex/edge';\n\nexport default {\n  async fetch(req: Request, ctx: TensorContext): Promise<Response> {\n    const transformed = await ctx.synthesize(await req.json(), {\n      quantize: 'fp8',\n      maxOverheadMs: 4\n    });\n    return new Response(JSON.stringify(transformed), { headers: { 'Content-Type': 'application/json' } });\n  }\n};`
+            }
+        };
+
+        let currentPreset = 'realtime-stream';
+
+        function selectPreset(presetKey) {
+            currentPreset = presetKey;
+            
+            // Update button styles
+            document.querySelectorAll('#preset-buttons .preset-btn').forEach(btn => {
+                btn.className = 'preset-btn p-3 rounded-lg text-left text-xs font-mono border border-zinc-800 bg-zinc-900/60 text-zinc-300 hover:border-zinc-700 transition-all';
+            });
+            event.currentTarget.className = 'preset-btn active p-3 rounded-lg text-left text-xs font-mono border border-red-500 bg-red-950/30 text-white transition-all';
+
+            // Update snippet view
+            const item = snippets[presetKey];
+            document.getElementById('code-tab-title').textContent = item.file;
+            document.getElementById('code-snippet-display').textContent = item.code;
+            
+            showToast(`Loaded ${item.file} configuration archetype`, 'info');
+        }
+
+        function updateRangeValues() {
+            const concurrency = document.getElementById('concurrency-range').value;
+            const entropy = (document.getElementById('entropy-range').value / 100).toFixed(2);
+            document.getElementById('concurrency-val').textContent = `${concurrency}k req/s`;
+            document.getElementById('entropy-val').textContent = `${entropy}`;
+        }
+
+        function synthesizePayload() {
+            const btn = document.getElementById('synth-btn');
+            btn.innerHTML = `<iconify-icon icon="lucide:loader" class="w-4 h-4 animate-spin"></iconify-icon> Synthesizing Tensor Grid...`;
+            btn.classList.add('opacity-75');
+
+            setTimeout(() => {
+                btn.innerHTML = `<iconify-icon icon="lucide:check" class="w-4 h-4"></iconify-icon> Compilation Verified (0.8ms)`;
+                btn.classList.remove('opacity-75');
+                showToast('Neural compile cycle finished with 0 warnings.', 'success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = `<iconify-icon icon="lucide:play" class="w-4 h-4"></iconify-icon> Execute Synthesizer`;
+                }, 2000);
+            }, 750);
+        }
+
+        function copySnippet() {
+            const textToCopy = document.getElementById('code-snippet-display').textContent;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                const copyLabel = document.getElementById('copy-text');
+                copyLabel.textContent = 'Copied!';
+                showToast('Code snippet copied to clipboard', 'success');
+                setTimeout(() => { copyLabel.textContent = 'Copy Code'; }, 2000);
+            } catch (err) {
+                showToast('Unable to access clipboard buffer', 'error');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        function toggleBilling(type) {
+            const monthlyBtn = document.getElementById('billing-monthly');
+            const annualBtn = document.getElementById('billing-annual');
+            const displays = document.querySelectorAll('.price-display');
+
+            if (type === 'annual') {
+                annualBtn.className = 'px-5 py-1.5 rounded-full text-xs font-mono font-bold text-white bg-black shadow transition-all flex items-center gap-1.5';
+                monthlyBtn.className = 'px-5 py-1.5 rounded-full text-xs font-mono font-bold text-zinc-400 hover:text-white transition-all';
+                displays.forEach(el => {
+                    el.textContent = el.getAttribute('data-annual');
+                });
+                showToast('Annual billing activated: 20% discount applied', 'success');
+            } else {
+                monthlyBtn.className = 'px-5 py-1.5 rounded-full text-xs font-mono font-bold text-white bg-black shadow transition-all';
+                annualBtn.className = 'px-5 py-1.5 rounded-full text-xs font-mono font-bold text-zinc-400 hover:text-white transition-all flex items-center gap-1.5';
+                displays.forEach(el => {
+                    el.textContent = el.getAttribute('data-monthly');
+                });
+            }
+        }
+
+        function selectPlan(planName) {
+            document.getElementById('modal-title').textContent = `Initialize ${planName}`;
+            document.getElementById('modal-desc').textContent = `Setting up automated deployment profile for the ${planName} cluster.`;
+            openModal('access-modal');
+        }
+
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            const card = modal.querySelector('div');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            const card = modal.querySelector('div');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function generateAccessKey() {
+            const handle = document.getElementById('modal-handle').value.trim() || 'anonymous-node';
+            closeModal('access-modal');
+            showToast(`Key generated for [${handle}]. Stored in cryptographic session.`, 'success');
+        }
+
+        async async function handleWaitlistSubmit(event) {
+      event.preventDefault();
+      const form = document.getElementById('waitlistForm') || document.getElementById('waitlist-form');
+      const emailInput = document.getElementById('waitlistEmail') || document.getElementById('waitlist-email');
+      const success = document.getElementById('waitlistSuccess') || document.getElementById('waitlist-success');
+      
+      const email = emailInput ? emailInput.value : '';
+      
+      try {
+        const response = await fetch('/api/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: email.split('@')[0],
+            email: email,
+            category: 'Waitlist Join',
+            message: 'User joined early access waitlist.'
+          })
+        });
+        
+        if (response.ok) {
+          if (form) form.classList.add('hidden');
+          if (success) success.classList.remove('hidden');
+        } else {
+          alert('Failed to join waitlist. Please try again.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error. Please try again.');
+      }
+    }
+      } catch (err) {
+        console.error(err);
+        alert('Network error. Please try again.');
+      }
+    }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let icon = 'lucide:info';
+            let borderColor = 'border-white/20';
+            let iconColor = 'text-white';
+            
+            if (type === 'success') {
+                icon = 'lucide:check-circle';
+                borderColor = 'border-red-500/50';
+                iconColor = 'text-[#00b4d8]';
+            } else if (type === 'error') {
+                icon = 'lucide:alert-triangle';
+                borderColor = 'border-red-700';
+                iconColor = 'text-red-500';
+            }
+
+            toast.className = `toast noir-glass flex items-center gap-3 px-4 py-3 rounded-xl border ${borderColor} text-xs font-mono text-zinc-200 shadow-2xl backdrop-blur-xl`;
+            toast.innerHTML = `
+                <iconify-icon icon="${icon}" class="w-4 h-4 ${iconColor} shrink-0"></iconify-icon>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 350);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

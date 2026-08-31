@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - SUANJAYA</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background-color: #0b0b0b;
+      color: #e5e5e5;
+      font-family: 'Inter', sans-serif;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-neutral-800 selection:text-white">
+
+  <!-- Header / Navigation -->
+  <header class="border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="h-3 w-3 rounded-full bg-orange-500 animate-pulse"></div>
+      <h1 class="text-sm font-bold tracking-widest uppercase">SUANJAYA ADMIN PANEL</h1>
+    </div>
+    <button id="logout-btn" class="hidden text-xs uppercase tracking-widest hover:text-white transition-colors border border-white/20 px-4 py-2 hover:bg-white hover:text-black">
+      Logout
+    </button>
+  </header>
+
+  <!-- Content Container -->
+  <main class="flex-grow flex items-center justify-center p-6">
+    
+    <!-- Login Card -->
+    <div id="login-container" class="w-full max-w-md bg-neutral-900 border border-white/10 p-8 shadow-2xl">
+      <h2 class="text-xl font-bold tracking-wide mb-6 uppercase text-center text-white">Authenticate</h2>
+      <div id="login-error" class="hidden mb-6 bg-red-500/10 border border-red-500/30 text-red-400 p-4 text-xs font-mono"></div>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2 font-mono" for="login-username">Master ID</label>
+          <input type="text" id="login-username" required class="w-full bg-black border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-white transition-colors font-mono" placeholder="SUANJAYA@stenku">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2 font-mono" for="login-password">Password</label>
+          <input type="password" id="login-password" required class="w-full bg-black border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-white transition-colors font-mono" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors">
+          Verify Access
+        </button>
+      </form>
+    </div>
+
+    <!-- Dashboard Main -->
+    <div id="dashboard-container" class="hidden w-full max-w-6xl bg-neutral-950 border border-white/10 p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-neutral-400 font-mono">Overview</div>
+          <h2 class="text-2xl font-bold text-white uppercase mt-1">Submissions</h2>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="bg-neutral-900 border border-white/10 px-4 py-2 text-xs font-mono">
+            Total: <span id="res-count" class="font-bold text-white">0</span>
+          </div>
+          <button onclick="fetchSubmissions()" class="p-2 border border-white/10 hover:bg-white hover:text-black transition-colors" title="Reload Data">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submissions Table -->
+      <div class="overflow-x-auto no-scrollbar border border-white/10">
+        <table class="w-full text-left font-sans text-sm text-neutral-300">
+          <thead class="bg-neutral-900 border-b border-white/10 text-xs font-mono uppercase text-neutral-400">
+            <tr>
+              <th class="p-4">Timestamp</th>
+              <th class="p-4">Name</th>
+              <th class="p-4">Email</th>
+              <th class="p-4">Category</th>
+              <th class="p-4">Message</th>
+              <th class="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="submissions-table-body" class="divide-y divide-white/5 font-mono text-xs">
+            <tr>
+              <td colspan="6" class="p-8 text-center text-neutral-500">Loading submissions...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 bg-black/30 py-6 px-6 text-center text-[10px] font-mono text-neutral-500">
+    <div>© 2026 SUANJAYA. ALL RIGHTS RESERVED.</div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const API_BASE = '';
+    const tokenKey = 'suanjaya_admin_token';
+    
+    const loginContainer = document.getElementById('login-container');
+    const dashboardContainer = document.getElementById('dashboard-container');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const loginError = document.getElementById('login-error');
+    const tableBody = document.getElementById('submissions-table-body');
+    const resCount = document.getElementById('res-count');
+
+    function checkAuth() {
+      const token = localStorage.getItem(tokenKey);
+      if (token) {
+        loginContainer.classList.add('hidden');
+        dashboardContainer.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+        fetchSubmissions();
+      } else {
+        loginContainer.classList.remove('hidden');
+        dashboardContainer.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.classList.add('hidden');
+      
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          localStorage.setItem(tokenKey, data.token);
+          checkAuth();
+        } else {
+          loginError.innerText = data.error || 'Authentication failed!';
+          loginError.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error(err);
+        loginError.innerText = 'Failed to connect to server.';
+        loginError.classList.remove('hidden');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem(tokenKey);
+      checkAuth();
+    });
+
+    async function fetchSubmissions() {
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return;
+
+      tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-neutral-500">Loading data...</td></tr>`;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/submissions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.status === 401) {
+          localStorage.removeItem(tokenKey);
+          checkAuth();
+          return;
+        }
+        const data = await response.json();
+        if (response.ok) {
+          renderSubmissions(data);
+        } else {
+          tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-400">Error loading data: ${data.error}</td></tr>`;
+        }
+      } catch (err) {
+        console.error(err);
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-400">Failed to connect to server.</td></tr>`;
+      }
+    }
+
+    function renderSubmissions(list) {
+      resCount.innerText = list.length;
+      
+      if (list.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-neutral-500">No submissions found.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = list.map(item => {
+        const date = new Date(item.created_at).toLocaleString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return `
+          <tr class="hover:bg-white/5 transition-colors">
+            <td class="p-4 whitespace-nowrap text-neutral-500">${date}</td>
+            <td class="p-4 font-bold text-white">${escapeHtml(item.name || '-')}</td>
+            <td class="p-4 text-neutral-300">${escapeHtml(item.email || '-')}</td>
+            <td class="p-4 text-amber-500 font-sans">${escapeHtml(item.category || '-')}</td>
+            <td class="p-4 text-neutral-400 max-w-xs break-all whitespace-normal leading-relaxed">${escapeHtml(item.message || '-')}</td>
+            <td class="p-4 text-right whitespace-nowrap">
+              <button onclick="deleteSubmission(${item.id})" class="px-3 py-1.5 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors uppercase tracking-widest text-[10px]">
+                Delete
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      lucide.createIcons();
+    }
+
+    async function deleteSubmission(id) {
+      if (!confirm('Are you sure you want to delete this submission?')) return;
+      const token = localStorage.getItem(tokenKey);
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/submissions/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          fetchSubmissions();
+        } else {
+          alert('Delete failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to connect to server.');
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

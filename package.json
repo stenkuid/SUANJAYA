@@ -1,0 +1,7 @@
+{
+  "name": "suanjaya",
+  "version": "1.0.0",
+  "scripts": {
+    "deploy": "git add . && git commit -m 'Build & deploy' --allow-empty && git push origin main && wrangler pages deploy public --project-name=suanjaya"
+  }
+}

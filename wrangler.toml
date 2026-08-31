@@ -1,0 +1,9 @@
+name = "suanjaya"
+compatibility_date = "2024-04-03"
+pages_build_output_dir = "public"
+
+# Untuk mengaktifkan database D1 asli di kemudian hari, hapus tanda pagar (#) di bawah:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "SUANJAYA"
+# database_id = "00000000-0000-0000-0000-000000000000"
